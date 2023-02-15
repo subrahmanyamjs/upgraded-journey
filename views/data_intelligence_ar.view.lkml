@@ -443,7 +443,7 @@ view: data_intelligence_ar {
   measure: Sum_of_Open_and_Over_Due_Local_Currency{
     type: sum
     value_format_name: Greek_Number_Format
-#     sql: ${Open_and_Over_Due_Global_Currency};;
+    sql: ${Open_and_Over_Due_Global_Currency};;
 #     html: <a href="#drillmenu" target="_self">
 #     {% if value < 0 %}
 #     {% assign abs_value = value | times: -1.0 %}
@@ -653,7 +653,7 @@ view: data_intelligence_ar {
   measure: Due_Amount{
     type: number
     value_format_name: Greek_Number_Format
-#     sql: ${Total_Receivables}-${OverDue_Amount} ;;
+    sql: ${Total_Receivables}-${OverDue_Amount} ;;
 #     html: <a href="#drillmenu" target="_self">
 #     {% if value < 0 %}
 #     {% assign abs_value = value | times: -1.0 %}
