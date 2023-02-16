@@ -1,4 +1,5 @@
 # The name of this view in Looker is "Data Intelligence Ar"
+# connection: "@{CONNECTION_NAME2}"
 view: data_intelligence_ar {
   # The sql_table_name parameter indicates the underlying database table
   # to be used for all fields in this view.
@@ -46,10 +47,10 @@ view: data_intelligence_ar {
 
   dimension: Past_Due_Interval{
     type: string
-    sql: if((date_diff(cast({% parameter Key_Date %} as Date),${TABLE}.NetDueDate, DAY)>0 and date_diff(cast({% parameter Key_Date %} as Date),${TABLE}.NetDueDate, DAY)<({% parameter Aging_Interval %}+1)),concat('1- ',({% parameter Aging_Interval %}),' Days'),
-        (if((date_diff(cast({% parameter Key_Date %} as Date),${TABLE}.NetDueDate, DAY)<(({% parameter Aging_Interval %}*2)+1)),concat(({% parameter Aging_Interval %}+1),'-',({% parameter Aging_Interval %}*2),' Days'),
-        (if((date_diff(cast({% parameter Key_Date %} as Date),${TABLE}.NetDueDate, DAY)<(({% parameter Aging_Interval %}*3)+1)),concat(({% parameter Aging_Interval %}*2+1),'-',({% parameter Aging_Interval %}*3),' Days'),
-        (if((date_diff(cast({% parameter Key_Date %} as Date),${TABLE}.NetDueDate, DAY)>(({% parameter Aging_Interval %}*3)+1)),concat('> ',({% parameter Aging_Interval %}*3),' Days'),'Due after Key Date' )) )) )) ) ;;
+    sql: if((date_diff(cast(current_date() as Date),${TABLE}.NetDueDate, DAY)>0 and date_diff(cast(current_date() as Date),${TABLE}.NetDueDate, DAY)<({% parameter Aging_Interval %}+1)),concat('1- ',({% parameter Aging_Interval %}),' Days'),
+        (if((date_diff(cast(current_date() as Date),${TABLE}.NetDueDate, DAY)<(({% parameter Aging_Interval %}*2)+1)),concat(({% parameter Aging_Interval %}+1),'-',({% parameter Aging_Interval %}*2),' Days'),
+        (if((date_diff(cast(current_date() as Date),${TABLE}.NetDueDate, DAY)<(({% parameter Aging_Interval %}*3)+1)),concat(({% parameter Aging_Interval %}*2+1),'-',({% parameter Aging_Interval %}*3),' Days'),
+        (if((date_diff(cast(current_date() as Date),${TABLE}.NetDueDate, DAY)>(({% parameter Aging_Interval %}*3)+1)),concat('> ',({% parameter Aging_Interval %}*3),' Days'),'Due after Key Date' )) )) )) ) ;;
   }
 
   dimension: Local_Currency_Key{
@@ -59,7 +60,7 @@ view: data_intelligence_ar {
 
   dimension: Accounts_Receivable_Global_Currency {
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Accounts_Receivable_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Accounts_Receivable_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Accounts_Receivable_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Accounts_Receivable_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Sold_to_Party_Country {
@@ -109,7 +110,7 @@ view: data_intelligence_ar {
 
   dimension: Bad_Debt_Global_Currency {
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Bad_Debt_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Bad_Debt_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Bad_Debt_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Bad_Debt_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Billing_Document {
@@ -157,7 +158,7 @@ view: data_intelligence_ar {
 
   dimension: Cleared_after_Due_date_Global_Currency {
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Cleared_after_Due_date_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Cleared_after_Due_date_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Cleared_after_Due_date_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Cleared_after_Due_date_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Cleared_on_or_before_Due_date_Local_Currency {
@@ -167,7 +168,7 @@ view: data_intelligence_ar {
 
   dimension: Cleared_on_or_before_Due_date_Global__Currency {
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Cleared_on_or_before_Due_date_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Cleared_on_or_before_Due_date_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Cleared_on_or_before_Due_date_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Cleared_on_or_before_Due_date_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Client_ID {
@@ -207,18 +208,13 @@ view: data_intelligence_ar {
 
   dimension: Doubtful_Receivables_Global_Currency{
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Doubtful_Receivables_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Doubtful_Receivables_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Doubtful_Receivables_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Doubtful_Receivables_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Exchange_Rate_Type {
     type: string
     sql: ${TABLE}.ExchangeRateType_KURST ;;
   }
-
-  #dimension: Fiscal_Year {
-   # type: string
-   # sql: ${TABLE}.FiscalYear_GJAHR ;;
-  #}
 
   dimension: Invoice_to_which_the_Transaction_belongs {
     type: string
@@ -252,7 +248,7 @@ view: data_intelligence_ar {
 
   dimension: Open_and_Not_Due_Global_Currency{
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Open_and_Not_Due_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Open_and_Not_Due_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Open_and_Not_Due_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Open_and_Not_Due_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Open_and_Over_Due_Local_Currency{
@@ -262,7 +258,7 @@ view: data_intelligence_ar {
 
   dimension: Open_and_Over_Due_Global_Currency{
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Open_and_Over_Due_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Open_and_Over_Due_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Open_and_Over_Due_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Open_and_Over_Due_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension_group: Posting {
@@ -290,7 +286,7 @@ view: data_intelligence_ar {
 
   dimension: Sales_Global_Currency{
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Sales_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Sales_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Sales_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Sales_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Written_off_Amount_Local_Currency {
@@ -300,12 +296,12 @@ view: data_intelligence_ar {
 
   dimension: Written_off_Amount {
     type: number
-    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Written_off_Amount_Local_Currency},`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Written_off_Amount_Local_Currency})),ifnull(CAST(`@{GCP_PROJECT}`.@{REPORTING_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
+    sql: Round(if(${Local_Currency_Key}={% parameter Currency_Required %}  ,${Written_off_Amount_Local_Currency},@{FUNCTION_DATASET}.Currency_Conversion( ${Client_ID},${Exchange_Rate_Type} ,${Local_Currency_Key},{% parameter Currency_Required %},${Posting_date},${Written_off_Amount_Local_Currency})),ifnull(CAST(@{FUNCTION_DATASET}.Currency_Decimal({% parameter Currency_Required %}) AS int),2)) ;;
   }
 
   dimension: Days_in_Arrear {
     type: number
-    sql: date_diff(${Net_Due_date},cast({% parameter Key_Date %} as date),Day) ;;
+    sql: date_diff(${Net_Due_date},cast(current_date() as date),Day) ;;
   }
 
   # A measure is a field that uses a SQL aggregate function. Here are defined sum and average
@@ -321,11 +317,6 @@ view: data_intelligence_ar {
         when CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)<= CAST(CURRENT_DATE() as Date) and CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)>= DATE_SUB(CAST(CURRENT_DATE() as Date),INTERVAL {% parameter Day_Sales_Outstanding %} MONTH )
       THEN ${Sales_Global_Currency}
       END;;
-    #sql:
-    #CASE
-    #when CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)<= CAST(CURRENT_DATE() as Date) and CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)>= DATE_SUB(${Current_Fiscal_Date_date},INTERVAL {% parameter Day_Sales_Outstanding %} MONTH )
-    #THEN ${Sales_Global_Currency}
-    #END;;
   }
 
   measure: AccountsRecievables_Total_DSO {
@@ -336,11 +327,6 @@ view: data_intelligence_ar {
         when CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)<= CAST(CURRENT_DATE() as Date) and CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)>= DATE_SUB(CAST(CURRENT_DATE() as Date),INTERVAL {% parameter Day_Sales_Outstanding %} MONTH )
       THEN ${Accounts_Receivable_Global_Currency}
       END;;
-    #sql:
-    #CASE
-    #when CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)<= CAST(CURRENT_DATE() as Date) and CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)>= DATE_SUB(${Current_Fiscal_Date_date},INTERVAL {% parameter Day_Sales_Outstanding %} MONTH )
-    #THEN ${Accounts_Receivable_Global_Currency}
-    #END;;
   }
 
   dimension: PeriodCalc {
@@ -408,6 +394,11 @@ view: data_intelligence_ar {
       datatype: date
       sql:PARSE_DATE('%m/%Y',  Concat(cast(Cast(split(Current_Period,'|')[OFFSET(1)] as int) as string),'/',split(Current_Period,'|')[OFFSET(0)]));;
       }
+    measure: Min_period {
+      type: date
+      sql: min(${Current_Fiscal_Date_date}) ;;
+    }
+
 
   dimension: Global_Currency_Key {
     type: string
@@ -416,23 +407,33 @@ view: data_intelligence_ar {
 
   dimension: Current_Date{
     type: date
-    sql: current_date() ;;
+    sql: (CURRENT_TIMESTAMP()) ;;
     html: {{ rendered_value | date: "%m-%d-%Y" }} ;;
   }
 
   measure: Current {
-    type: date
+    hidden: yes
+    type: max
     sql: ${Current_Date} ;;
+  }
+
+  measure: no_of_days {
+    hidden: yes
+    type: max
+    sql:
+    CASE
+      when CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)<= CAST(CURRENT_DATE() as Date) and CAST(${TABLE}.PostingDateInTheDocument_BUDAT as Date)>= DATE_SUB(CAST(CURRENT_DATE() as Date),INTERVAL {% parameter Day_Sales_Outstanding %} MONTH )
+    THEN date_diff(current_date(),${Fiscal_Date_date},DAY)
+    END;;
   }
 
   measure: Total_DSO {
     type: number
     sql: floor(if(${Sales_Total_DSO}=0,0,(${AccountsRecievables_Total_DSO}/${Sales_Total_DSO})*{% parameter Day_Sales_Outstanding %}*30)) ;;
-    #sql: floor(if(${Sales_Total_DSO}=0,0,(${AccountsRecievables_Total_DSO}/${Sales_Total_DSO})*date_diff(DATE_SUB(${Current_Fiscal_Date_date},INTERVAL {% parameter Day_Sales_Outstanding %} MONTH ),${Current},days))) ;;
 
     link: {
       label: "Day Sales Outstanding"
-      url: "/dashboards/cortex_sap_operational::day_sales_outstanding?"
+      url: "/dashboards/cortex_infosys::day_sales_outstanding?"
     }
   }
   measure: DSO{
@@ -442,236 +443,236 @@ view: data_intelligence_ar {
 
   measure: Sum_of_Open_and_Over_Due_Local_Currency{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Open_and_Over_Due_Global_Currency};;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    # {% if value < 0 %}
+    # {% assign abs_value = value | times: -1.0 %}
+    # {% assign pos_neg = '-' %}
+    # {% else %}
+    # {% assign abs_value = value | times: 1.0 %}
+    # {% assign pos_neg = '' %}
+    # {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %}
-#     ;;
+    # {% if abs_value >=1000000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    # {% elsif abs_value >=1000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    # {% elsif abs_value >=1000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    # {% else %}
+    # {{pos_neg}}{{ abs_value }}
+    # {% endif %} ;;
+    value_format_name: Greek_Number_Format
     link: {
       label: "Overdue Recievables"
-      url: "/dashboards/cortex_sap_operational::overdue_receivables?"
+      url: "/dashboards/cortex_infosys::overdue_receivables?"
     }
   }
 
   measure: Sum_of_Receivables{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Accounts_Receivable_Global_Currency} ;;
-#     html: <a href="#drillmenu" target="_self">
-#           {% if value < 0 %}
-#           {% assign abs_value = value | times: -1.0 %}
-#           {% assign pos_neg = '-' %}
-#           {% else %}
-#           {% assign abs_value = value | times: 1.0 %}
-#           {% assign pos_neg = '' %}
-#           {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    #       {% if value < 0 %}
+    #       {% assign abs_value = value | times: -1.0 %}
+    #       {% assign pos_neg = '-' %}
+    #       {% else %}
+    #       {% assign abs_value = value | times: 1.0 %}
+    #       {% assign pos_neg = '' %}
+    #       {% endif %}
 
-#           {% if abs_value >=1000000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#           {% elsif abs_value >=1000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#           {% elsif abs_value >=1000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#           {% else %}
-#           {{pos_neg}}{{ abs_value }}
-#           {% endif %}
-#           ;;
+    #       {% if abs_value >=1000000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    #       {% elsif abs_value >=1000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    #       {% elsif abs_value >=1000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    #       {% else %}
+    #       {{pos_neg}}{{ abs_value }}
+    #       {% endif %}
+    #       ;;
+    value_format_name: Greek_Number_Format
   }
 
   measure: Sum_of_Sales{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Sales_Global_Currency} ;;
-#     html: <a href="#drillmenu" target="_self">
-#           {% if value < 0 %}
-#           {% assign abs_value = value | times: -1.0 %}
-#           {% assign pos_neg = '-' %}
-#           {% else %}
-#           {% assign abs_value = value | times: 1.0 %}
-#           {% assign pos_neg = '' %}
-#           {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    #       {% if value < 0 %}
+    #       {% assign abs_value = value | times: -1.0 %}
+    #       {% assign pos_neg = '-' %}
+    #       {% else %}
+    #       {% assign abs_value = value | times: 1.0 %}
+    #       {% assign pos_neg = '' %}
+    #       {% endif %}
 
-#           {% if abs_value >=1000000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#           {% elsif abs_value >=1000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#           {% elsif abs_value >=1000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#           {% else %}
-#           {{pos_neg}}{{ abs_value }}
-#           {% endif %}
-#           ;;
+    #       {% if abs_value >=1000000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    #       {% elsif abs_value >=1000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    #       {% elsif abs_value >=1000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    #       {% else %}
+    #       {{pos_neg}}{{ abs_value }}
+    #       {% endif %}
+    #       ;;
+    value_format_name: Greek_Number_Format
   }
 
   measure: Total_Receivables{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Accounts_Receivable_Global_Currency} ;;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html:
+    # <a href="#drillmenu" target="_self">
+    #   {% if value < 0 %}
+    #   {% assign abs_value = value | times: -1.0 %}
+    #   {% assign pos_neg = '-' %}
+    #   {% else %}
+    #   {% assign abs_value = value | times: 1.0 %}
+    #   {% assign pos_neg = '' %}
+    #   {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %}
-#     ;;
+    #   {% if abs_value >=1000000000 %}
+    #   {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    #   {% elsif abs_value >=1000000 %}
+    #   {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    #   {% elsif abs_value >=1000 %}
+    #   {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    #   {% else %}
+    #   {{pos_neg}}{{ abs_value }}
+    #   {% endif %}
+    # </a>;;
+    value_format_name: Greek_Number_Format
     link: {
       label: "Total Recievables"
-      url: "/dashboards/cortex_sap_operational::total_receivable?"
+      url: "/dashboards/cortex_infosys::total_receivable?"
       }
     }
 
   measure: Total_Doubtful_Receivables{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Doubtful_Receivables_Global_Currency} ;;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    # {% if value < 0 %}
+    # {% assign abs_value = value | times: -1.0 %}
+    # {% assign pos_neg = '-' %}
+    # {% else %}
+    # {% assign abs_value = value | times: 1.0 %}
+    # {% assign pos_neg = '' %}
+    # {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %}
-#     ;;
+    # {% if abs_value >=1000000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    # {% elsif abs_value >=1000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    # {% elsif abs_value >=1000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    # {% else %}
+    # {{pos_neg}}{{ abs_value }}
+    # {% endif %}
+    # ;;
+    value_format_name: Greek_Number_Format
     link: {
       label: "Doubtful Recievables"
-      url: "/dashboards/cortex_sap_operational::doubtful_receivable?"
+      url: "/dashboards/cortex_infosys::doubtful_receivable?"
     }
   }
 
   measure: Sum_Doubtful_Receivables{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Doubtful_Receivables_Global_Currency} ;;
-#     html: <a href="#drillmenu" target="_self">
-#           {% if value < 0 %}
-#           {% assign abs_value = value | times: -1.0 %}
-#           {% assign pos_neg = '-' %}
-#           {% else %}
-#           {% assign abs_value = value | times: 1.0 %}
-#           {% assign pos_neg = '' %}
-#           {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    #       {% if value < 0 %}
+    #       {% assign abs_value = value | times: -1.0 %}
+    #       {% assign pos_neg = '-' %}
+    #       {% else %}
+    #       {% assign abs_value = value | times: 1.0 %}
+    #       {% assign pos_neg = '' %}
+    #       {% endif %}
 
-#           {% if abs_value >=1000000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#           {% elsif abs_value >=1000000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#           {% elsif abs_value >=1000 %}
-#           {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#           {% else %}
-#           {{pos_neg}}{{ abs_value }}
-#           {% endif %}
-#           ;;
+    #       {% if abs_value >=1000000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    #       {% elsif abs_value >=1000000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    #       {% elsif abs_value >=1000 %}
+    #       {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    #       {% else %}
+    #       {{pos_neg}}{{ abs_value }}
+    #       {% endif %}
+    #       ;;
+    value_format_name: Greek_Number_Format
   }
 
   measure: OverDue_Amount{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Open_and_Over_Due_Global_Currency};;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    # {% if value < 0 %}
+    # {% assign abs_value = value | times: -1.0 %}
+    # {% assign pos_neg = '-' %}
+    # {% else %}
+    # {% assign abs_value = value | times: 1.0 %}
+    # {% assign pos_neg = '' %}
+    # {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %};;
+    # {% if abs_value >=1000000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    # {% elsif abs_value >=1000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    # {% elsif abs_value >=1000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    # {% else %}
+    # {{pos_neg}}{{ abs_value }}
+    # {% endif %};;
+    value_format_name: Greek_Number_Format
   }
 
   measure: Over_Due_Amount{
     type: sum
-    value_format_name: Greek_Number_Format
     sql: ${Open_and_Over_Due_Global_Currency};;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    # {% if value < 0 %}
+    # {% assign abs_value = value | times: -1.0 %}
+    # {% assign pos_neg = '-' %}
+    # {% else %}
+    # {% assign abs_value = value | times: 1.0 %}
+    # {% assign pos_neg = '' %}
+    # {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %};;
+    # {% if abs_value >=1000000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    # {% elsif abs_value >=1000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    # {% elsif abs_value >=1000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    # {% else %}
+    # {{pos_neg}}{{ abs_value }}
+    # {% endif %};;
+    value_format_name: Greek_Number_Format
   }
 
   measure: Due_Amount{
     type: number
-    value_format_name: Greek_Number_Format
     sql: ${Total_Receivables}-${OverDue_Amount} ;;
-#     html: <a href="#drillmenu" target="_self">
-#     {% if value < 0 %}
-#     {% assign abs_value = value | times: -1.0 %}
-#     {% assign pos_neg = '-' %}
-#     {% else %}
-#     {% assign abs_value = value | times: 1.0 %}
-#     {% assign pos_neg = '' %}
-#     {% endif %}
+    # html: <a href="#drillmenu" target="_self">
+    # {% if value < 0 %}
+    # {% assign abs_value = value | times: -1.0 %}
+    # {% assign pos_neg = '-' %}
+    # {% else %}
+    # {% assign abs_value = value | times: 1.0 %}
+    # {% assign pos_neg = '' %}
+    # {% endif %}
 
-#     {% if abs_value >=1000000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
-#     {% elsif abs_value >=1000000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
-#     {% elsif abs_value >=1000 %}
-#     {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
-#     {% else %}
-#     {{pos_neg}}{{ abs_value }}
-#     {% endif %};;
+    # {% if abs_value >=1000000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000000.0 | round: 2 }}B
+    # {% elsif abs_value >=1000000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000000.0 | round: 2 }}M
+    # {% elsif abs_value >=1000 %}
+    # {{pos_neg}}{{ abs_value | divided_by: 1000.0 | round: 2 }}K
+    # {% else %}
+    # {{pos_neg}}{{ abs_value }}
+    # {% endif %};;
+    value_format_name: Greek_Number_Format
   }
 
   measure: count {
