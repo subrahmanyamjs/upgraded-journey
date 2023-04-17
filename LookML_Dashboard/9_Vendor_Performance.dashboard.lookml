@@ -1,5 +1,5 @@
-- dashboard: vendor_performance
-  title: "[SAP VENDOR PERFORMANCE] 09: Vendor Performance"
+- dashboard: sap_finance_vp_09_vendor_performance
+  title: "Vendor Performance"
   layout: newspaper
   preferred_viewer: dashboards-next
   description: ''
@@ -12,7 +12,6 @@
     type: looker_column
     fields: [vendor_performance.name1, vendor_performance.avg_vendor_cycle_time_in_days]
     filters:
-      material_types_md.language_key_spras: E
       vendor_performance.vendor_account_number_lifnr: "-NULL"
     sorts: [vendor_performance.avg_vendor_cycle_time_in_days desc 0]
     limit: 5
@@ -102,117 +101,6 @@
     col: 8
     width: 8
     height: 6
-  - title: On-time Delivery
-    name: On-time Delivery
-    model: cortex_sap_operational
-    explore: vendor_performance
-    type: single_value
-    fields: [vendor_performance.Vendor_Ontime]
-    filters:
-      material_types_md.language_key_spras: E
-    limit: 500
-    column_limit: 50
-    custom_color_enabled: true
-    show_single_value_title: true
-    show_comparison: false
-    comparison_type: value
-    comparison_reverse_colors: false
-    show_comparison_label: true
-    enable_conditional_formatting: false
-    conditional_formatting_include_totals: false
-    conditional_formatting_include_nulls: false
-    custom_color: "#000000"
-    single_value_title: On-time Delivery
-    defaults_version: 1
-    hidden_fields: []
-    y_axes: []
-    note_state: collapsed
-    note_display: above
-    note_text: On-time deliveries for purchase orders created during the date range
-      selected
-    listen:
-      Company Code: vendor_performance.company_text_butxt
-      Vendor Country: vendor_performance.country_key_land1
-      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
-      Purchasing Group: vendor_performance.purchasing_group_text_eknam
-      Vendor Name: vendor_performance.name1
-      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
-      Target Currency: currency_conversion_new.tcurr
-    row: 2
-    col: 0
-    width: 4
-    height: 2
-  - title: Invoice Accuracy
-    name: Invoice Accuracy
-    model: cortex_sap_operational
-    explore: vendor_performance
-    type: single_value
-    fields: [vendor_performance.Invoice_Accuracy]
-    limit: 500
-    column_limit: 50
-    custom_color_enabled: true
-    show_single_value_title: true
-    show_comparison: false
-    comparison_type: value
-    comparison_reverse_colors: false
-    show_comparison_label: true
-    enable_conditional_formatting: false
-    conditional_formatting_include_totals: false
-    conditional_formatting_include_nulls: false
-    series_types: {}
-    defaults_version: 1
-    hidden_fields: []
-    y_axes: []
-    note_state: collapsed
-    note_display: above
-    note_text: Accurate invoices received for purchase orders created during the date
-      range selected
-    listen:
-      Company Code: vendor_performance.company_text_butxt
-      Vendor Country: vendor_performance.country_key_land1
-      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
-      Purchasing Group: vendor_performance.purchasing_group_text_eknam
-      Vendor Name: vendor_performance.name1
-      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
-    row: 4
-    col: 0
-    width: 4
-    height: 2
-  - title: Rejection Rate
-    name: Rejection Rate
-    model: cortex_sap_operational
-    explore: vendor_performance
-    type: single_value
-    fields: [vendor_performance.Rejection_rate]
-    limit: 500
-    column_limit: 50
-    custom_color_enabled: true
-    show_single_value_title: true
-    show_comparison: false
-    comparison_type: value
-    comparison_reverse_colors: false
-    show_comparison_label: true
-    enable_conditional_formatting: false
-    conditional_formatting_include_totals: false
-    conditional_formatting_include_nulls: false
-    defaults_version: 1
-    hidden_fields: []
-    y_axes: []
-    note_state: collapsed
-    note_display: above
-    note_text: Deliveries rejected for purchase orders created during the date range
-      selected
-    listen:
-      Company Code: vendor_performance.company_text_butxt
-      Vendor Country: vendor_performance.country_key_land1
-      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
-      Purchasing Group: vendor_performance.purchasing_group_text_eknam
-      Vendor Name: vendor_performance.name1
-      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
-    row: 6
-    col: 0
-    width: 4
-    height: 2
   - title: Delivery Performance by Top Vendors
     name: Delivery Performance by Top Vendors
     model: cortex_sap_operational
@@ -296,11 +184,10 @@
     model: cortex_sap_operational
     explore: vendor_performance
     type: looker_column
-    fields: [vendor_performance.name1, vendor_performance.sum_Standard_Price_global_currency,
-      vendor_performance.sum_Purchase_price_global_currency, vendor_performance.sum_Purchase_Variance_global_currency]
-    filters:
-      material_types_md.language_key_spras: E
-    sorts: [vendor_performance.sum_Purchase_Variance_global_currency desc]
+    fields: [vendor_performance.name1, vendor_performance.sum_standard_cost, vendor_performance.sum_net_price_in_target_currency_netpr,
+      vendor_performance.sum_purchase_price_variance]
+    filters: {}
+    sorts: [vendor_performance.sum_net_price_in_target_currency_netpr desc 0]
     limit: 5
     column_limit: 50
     x_axis_gridlines: false
@@ -346,6 +233,7 @@
     series_types:
       purchase_price_varaince.purchase_varainace_pv: area
       vendor_performance.sum_Purchase_Variance_global_currency: area
+      vendor_performance.sum_purchase_price_variance: area
     series_colors:
       purchase_price_varaince.purchase_varainace_pv: "#FF8168"
     series_labels:
@@ -355,6 +243,9 @@
       vendor_performance.sum_Standard_Price_global_currency: Standard Price
       vendor_performance.sum_Purchase_price_global_currency: Purchase Price
       vendor_performance.sum_Purchase_Variance_global_currency: Purchase Variance
+      vendor_performance.sum_purchase_price_variance: Purchase Price Variance
+      vendor_performance.sum_net_price_in_target_currency_netpr: Purchase Price
+      vendor_performance.sum_standard_cost: Standard Price
     x_axis_label_rotation: 0
     show_row_numbers: true
     truncate_column_names: false
@@ -366,11 +257,12 @@
     conditional_formatting_include_nulls: false
     defaults_version: 1
     hidden_fields: []
+    hidden_pivots: {}
     note_state: collapsed
     note_display: hover
-    note_text: The sum of differences between the purchase price and standard price
-      multiplied by the order quantity for purchase orders created during the date
-      range selected
+    note_text: The sum of differences, in the target currency, between the purchase
+      price and standard price multiplied by the order quantity for purchase orders
+      created during the date range selected
     listen:
       Company Code: vendor_performance.company_text_butxt
       Vendor Country: vendor_performance.country_key_land1
@@ -378,7 +270,7 @@
       Purchasing Group: vendor_performance.purchasing_group_text_eknam
       Vendor Name: vendor_performance.name1
       Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
-      Target Currency: currency_conversion_new.tcurr
+      Target Currency: vendor_performance.target_currency_tcurr
     row: 9
     col: 0
     width: 8
@@ -452,6 +344,7 @@
       Purchasing Group: vendor_performance.purchasing_group_text_eknam
       Vendor Name: vendor_performance.name1
       Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
+      Target Currency: vendor_performance.target_currency_tcurr
     row: 9
     col: 16
     width: 8
@@ -476,6 +369,117 @@
     col: 0
     width: 24
     height: 1
+  - title: On-time Delivery
+    name: On-time Delivery
+    model: cortex_sap_operational
+    explore: vendor_performance
+    type: single_value
+    fields: [vendor_performance.Vendor_Ontime]
+    filters: {}
+    limit: 500
+    column_limit: 50
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    custom_color: "#000000"
+    single_value_title: On-time Delivery
+    defaults_version: 1
+    hidden_fields: []
+    y_axes: []
+    note_state: collapsed
+    note_display: hover
+    note_text: On-time deliveries for purchase orders created during the date range
+      selected
+    listen:
+      Company Code: vendor_performance.company_text_butxt
+      Vendor Name: vendor_performance.name1
+      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
+      Vendor Country: vendor_performance.country_key_land1
+      Purchasing Group: vendor_performance.purchasing_group_text_eknam
+      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
+    row: 2
+    col: 0
+    width: 4
+    height: 2
+  - title: Invoice Accuracy
+    name: Invoice Accuracy
+    model: cortex_sap_operational
+    explore: vendor_performance
+    type: single_value
+    fields: [vendor_performance.Invoice_Accuracy]
+    filters: {}
+    limit: 500
+    column_limit: 50
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    series_types: {}
+    defaults_version: 1
+    hidden_fields: []
+    y_axes: []
+    note_state: collapsed
+    note_display: hover
+    note_text: Accurate invoices received for purchase orders created during the date
+      range selected
+    listen:
+      Company Code: vendor_performance.company_text_butxt
+      Vendor Name: vendor_performance.name1
+      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
+      Vendor Country: vendor_performance.country_key_land1
+      Purchasing Group: vendor_performance.purchasing_group_text_eknam
+      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
+    row: 4
+    col: 0
+    width: 4
+    height: 2
+  - title: Rejection Rate
+    name: Rejection Rate
+    model: cortex_sap_operational
+    explore: vendor_performance
+    type: single_value
+    fields: [vendor_performance.Rejection_rate]
+    filters: {}
+    limit: 500
+    column_limit: 50
+    custom_color_enabled: true
+    show_single_value_title: true
+    show_comparison: false
+    comparison_type: value
+    comparison_reverse_colors: false
+    show_comparison_label: true
+    enable_conditional_formatting: false
+    conditional_formatting_include_totals: false
+    conditional_formatting_include_nulls: false
+    defaults_version: 1
+    hidden_fields: []
+    y_axes: []
+    note_state: collapsed
+    note_display: hover
+    note_text: Deliveries rejected for purchase orders created during the date range
+      selected
+    listen:
+      Company Code: vendor_performance.company_text_butxt
+      Vendor Name: vendor_performance.name1
+      Purchasing Organization: vendor_performance.purchasing_organization_text_ekotx
+      Vendor Country: vendor_performance.country_key_land1
+      Purchasing Group: vendor_performance.purchasing_group_text_eknam
+      Purchase Order Date: vendor_performance.purchasing_document_date_bedat_date
+    row: 6
+    col: 0
+    width: 4
+    height: 2
   filters:
   - name: Purchase Order Date
     title: Purchase Order Date
@@ -503,7 +507,7 @@
     model: cortex_sap_operational
     explore: vendor_performance
     listens_to_filters: []
-    field: currency_conversion_new.tcurr
+    field: vendor_performance.target_currency_tcurr
   - name: Company Code
     title: Company Code
     type: field_filter
@@ -515,7 +519,8 @@
       display: popover
     model: cortex_sap_operational
     explore: vendor_performance
-    listens_to_filters: []
+    listens_to_filters: [Purchasing Organization, Purchasing Group, Vendor Country,
+      Vendor Name]
     field: vendor_performance.company_text_butxt
   - name: Purchasing Organization
     title: Purchasing Organization
@@ -528,7 +533,7 @@
       display: popover
     model: cortex_sap_operational
     explore: vendor_performance
-    listens_to_filters: []
+    listens_to_filters: [Company Code, Purchasing Group, Vendor Country, Vendor Name]
     field: vendor_performance.purchasing_organization_text_ekotx
   - name: Purchasing Group
     title: Purchasing Group
@@ -541,7 +546,8 @@
       display: popover
     model: cortex_sap_operational
     explore: vendor_performance
-    listens_to_filters: []
+    listens_to_filters: [Company Code, Purchasing Organization, Vendor Country, Vendor
+        Name]
     field: vendor_performance.purchasing_group_text_eknam
   - name: Vendor Country
     title: Vendor Country
@@ -554,7 +560,8 @@
       display: popover
     model: cortex_sap_operational
     explore: vendor_performance
-    listens_to_filters: []
+    listens_to_filters: [Company Code, Purchasing Organization, Purchasing Group,
+      Vendor Name]
     field: vendor_performance.country_key_land1
   - name: Vendor Name
     title: Vendor Name
@@ -567,5 +574,6 @@
       display: popover
     model: cortex_sap_operational
     explore: vendor_performance
-    listens_to_filters: []
+    listens_to_filters: [Company Code, Purchasing Organization, Purchasing Group,
+      Vendor Country]
     field: vendor_performance.name1

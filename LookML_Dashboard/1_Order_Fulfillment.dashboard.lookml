@@ -1,5 +1,5 @@
 - dashboard: sap_order_to_cash_02c_01_order_fulfillment_performance_tuning
-  title: "[SAP ORDER TO CASH] 02C 01: Order Fulfillment"
+  title: "Sales Order Fulfillment"
   layout: newspaper
   preferred_viewer: dashboards-next
   description: ''
@@ -234,11 +234,12 @@
     model: cortex_sap_operational
     explore: sales_orders
     type: looker_line
-    fields: [deliveries.date_created_erdat_month, deliveries.count_on_time_delivery,
-      deliveries.count_in_full_delivery, deliveries.count_otif, deliveries.count_of_deliveries]
-    fill_fields: [deliveries.date_created_erdat_month]
-    sorts: [deliveries.date_created_erdat_month]
+    fields: [deliveries.count_on_time_delivery, deliveries.count_in_full_delivery,
+      deliveries.count_otif, deliveries.count_of_deliveries, sales_orders.creation_date_erdat_month]
+    fill_fields: [sales_orders.creation_date_erdat_month]
+    sorts: [sales_orders.creation_date_erdat_month]
     limit: 500
+    column_limit: 50
     dynamic_fields: [{category: table_calculation, expression: "${deliveries.count_on_time_delivery}/${deliveries.count_of_deliveries}",
         label: On Time %, value_format: !!null '', value_format_name: percent_1, _kind_hint: measure,
         table_calculation: on_time, _type_hint: number, id: yuk3RNbXmc}, {category: table_calculation,

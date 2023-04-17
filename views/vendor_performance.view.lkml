@@ -19,6 +19,28 @@ view: vendor_performance {
     hidden: no
   }
 
+  dimension: fiscal_year {
+    type: string
+    sql: ${TABLE}.FiscalYear ;;
+  }
+
+  dimension: fiscal_period {
+    type: string
+    sql: ${TABLE}.FiscalPeriod ;;
+  }
+
+  dimension: month_year{
+    type: string
+    hidden: no
+    primary_key: yes
+    sql: concat(${fiscal_year},"/",${fiscal_period}) ;;
+  }
+
+  dimension: fiscalyear_variant_periv {
+    type: string
+    sql: ${TABLE}.FiscalyearVariant_PERIV ;;
+  }
+
   dimension: vendor_cycle_time_in_days {
     type: number
     sql: ${TABLE}.VendorCycleTimeInDays;;
@@ -81,34 +103,27 @@ view: vendor_performance {
     hidden: no
   }
 
+  ## New approach Feb 2023
 
-  dimension: Key_date_result {
-    type: yesno
+  dimension: language_key {
+    type: string
+    sql: ${TABLE}.LanguageKey_SPRAS ;;
     hidden: no
-    sql:   (vendor_performance.PurchasingDocumentDate_BEDAT ) <= ( SELECT
-
-          DISTINCT (vendor_performance.PurchasingDocumentDate_BEDAT ) AS vendor_performance_purchasing_document_date_bedat_date,
-
-      FROM `@{GCP_PROJECT}.@{REPORTING_DATASET}.VendorPerformance`
-      AS vendor_performance
-      WHERE  {%  condition temp_key_date %} TIMESTAMP(${purchasing_document_date_bedat_date}) {% endcondition %}
-      )
-
-      AND
-
-      (vendor_performance.PurchasingDocumentDate_BEDAT ) >= (
-
-      SELECT
-
-      DISTINCT (vendor_performance.PurchasingDocumentDate_BEDAT )-365 AS vendor_performance_purchasing_document_date_bedat_date,
-
-      FROM `@{GCP_PROJECT}.@{REPORTING_DATASET}.VendorPerformance`
-      AS vendor_performance
-      WHERE  {%  condition temp_key_date %} TIMESTAMP(${purchasing_document_date_bedat_date}) {% endcondition %}
-      );;
   }
 
-  dimension_group: PO_Creation_Date {
+  dimension: material_description {
+    type: string
+    sql: ${TABLE}.MaterialText_MAKTX;;
+    hidden: no
+  }
+
+  dimension: material_type_description {
+    type: string
+    sql: ${TABLE}.DescriptionOfMaterialType_MTBEZ;;
+    hidden: no
+  }
+
+    dimension_group: PO_Creation_Date {
     type: time
     timeframes: [
       raw,
@@ -170,7 +185,13 @@ view: vendor_performance {
     suggest_persist_for: "10 minutes"
     hidden: no
   }
-
+  
+  dimension: target_currency_tcurr {
+    type: string
+    sql: ${TABLE}.TargetCurrency_TCURR ;;
+    hidden: no
+  }
+  
   dimension: currency_key_waers2 {
     type: string
     sql: ${TABLE}.CurrencyKey_WAERS ;;
@@ -206,20 +227,6 @@ view: vendor_performance {
     sql: ${TABLE}.GoodsReceiptAmountInSourceCurrency ;;
   }
 
-####################### currency conversion ########################
-
-  dimension: goods_receipt_amount_in_global_currency {
-    type: number
-    sql: ${TABLE}.GoodsReceiptAmountInSourceCurrency * ${currency_conversion_new.ukurs} ;;
-  }
-
-  measure: sum_goods_receipt_amount_in_global_currency{
-    type: sum
-    sql: ${goods_receipt_amount_in_global_currency} ;;
-  }
-
-#####################################################################
-
   dimension: goods_receipt_amount_in_source_currency_1 {
     type: number
     sql: ${transactionevent_type_vgabe} = "1" ;;
@@ -236,12 +243,6 @@ view: vendor_performance {
     sql: ${net_order_valuein_pocurrency_netwr} ;;
   }
 
-  measure: sum_po_global_currency {
-    type: sum
-    sql: ${net_order_valuein_globalcurr} ;;
-  }
-
-
   dimension: goods_receipt_amount_in_target_currency {
     type: number
     sql: ${TABLE}.GoodsReceiptAmountInTargetCurrency ;;
@@ -255,12 +256,14 @@ view: vendor_performance {
 
   dimension: material_number {
     type: string
+    primary_key: yes
     sql: ${TABLE}.MaterialNumber_MATNR ;;
   }
 
   dimension: material_type {
     type: string
     sql: ${TABLE}.MaterialType_MTART ;;
+    hidden: no
   }
 
   dimension: material_group {
@@ -356,6 +359,25 @@ view: vendor_performance {
   dimension: invoice_amount_in_target_currency {
     type: number
     sql: ${TABLE}.InvoiceAmountInTargetCurrency ;;
+    hidden: no
+  }
+
+  measure: sum_invoice_amount_in_target_currency {
+    type: sum
+    sql: ${invoice_amount_in_target_currency} ;;
+    value_format_name: Greek_Number_Format
+    hidden: no
+  }
+
+  measure: sum_invoice_amount_in_target_currency_by_top_vendor {
+    type: sum
+    sql: ${invoice_amount_in_target_currency} ;;
+    value_format_name: Greek_Number_Format
+    link: {
+      label: "Spend by Top Vendors"
+      url: "/dashboards/cortex_sap_operational::sap_finance_sa_08_a_spend_by_top_vendors?Company+Code={{ _filters['vendor_performance.company_text_butxt']| url_encode }}&Purchasing+Organization={{ _filters['vendor_performance.purchasing_organization_text_ekotx']| url_encode }}&Purchasing+Group={{ _filters['vendor_performance.purchasing_group_text_eknam']| url_encode }}&Vendor+Name={{ _filters['vendor_performance.name1']| url_encode }}&Vendor+Country={{ _filters['vendor_performance.country_key_land1']| url_encode }}&Target+Currency={{ _filters['vendor_performance.target_currency_tcurr']| url_encode }}&Invoice+Date={{ _filters['vendor_performance.Invoice_date_date']| url_encode }}"
+    }
+    hidden: no
   }
 
   dimension: invoice_quantity {
@@ -399,18 +421,18 @@ view: vendor_performance {
     hidden: no
   }
 
+  measure: count_vendors {
+    type: count_distinct
+    sql: ${name1} ;;
+    hidden: no
+  }
+  
   dimension: net_order_valuein_pocurrency_netwr {
     type: number
     sql: ${TABLE}.NetOrderValueinPOCurrency_NETWR ;;
     value_format_name: Greek_Number_Format
     hidden: no
   }
-
-  dimension: net_order_valuein_globalcurr {
-    type: number
-    sql: ${TABLE}.NetOrderValueinPOCurrency_NETWR * ${currency_conversion_new.ukurs};;
-  }
-
 
   dimension: number_of_material_document_belnr {
     type: string
@@ -504,11 +526,6 @@ view: vendor_performance {
     sql: ${TABLE}.SequentialNumberOfAccountAssignment_ZEKKN ;;
   }
 
-  dimension: target_currency_tcurr {
-    type: string
-    sql: ${TABLE}.TargetCurrency_TCURR ;;
-  }
-
   dimension: transactionevent_type_vgabe {
     type: string
     sql: ${TABLE}.TransactioneventType_VGABE ;;
@@ -567,11 +584,6 @@ view: vendor_performance {
     sql: ${TABLE}.VendorInFullDelivery ;;
   }
 
-  dimension: vendor_invoice_accuracy {
-    type: string
-    sql: ${TABLE}.VendorInvoiceAccuracy ;;
-  }
-
   dimension: vendor_on_time_delivery {
     type: string
     sql: ${TABLE}.VendorOnTimeDelivery ;;
@@ -592,11 +604,6 @@ view: vendor_performance {
     filters: [vendor_on_time_in_full_delivery: "OTIF, NotOTIF"]
   }
 
-  # dimension: vendor_quality {
-  #   type: string
-  #   sql: ${TABLE}.VendorQuality ;;
-  # }
-
   measure: count {
     type: count
   }
@@ -613,20 +620,10 @@ view: vendor_performance {
     sql: ${invoice_amount_in_source_currency} ;;
   }
 
-  measure: total_spend_global_curr{
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    hidden: no
-    }
-
-  ######################################## Invoive Amount ####################################################
-
   dimension: invoice_amount_in_source_currency_1 {
     type: number
     sql: ${TABLE}.InvoiceAmountInSourceCurrency ;;
   }
-
-######################################## invoice amount currency conversion  #################################
 
   dimension: invoice_amount_in_source_currency {
     type: number
@@ -650,11 +647,6 @@ view: vendor_performance {
     required_fields: [invoice_amount_in_source_currency]
   }
 
-  dimension: Spend_Global_Curr {
-    type: number
-    sql: ${invoice_amount_in_source_currency} * ${currency_conversion_new.ukurs} ;;
-  }
-
   measure: sum_invoice_amount {
     type: sum
     sql: ${invoice_amount_in_source_currency} ;;
@@ -662,10 +654,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_invoice_amount_global_currency {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-  }
 
   ######################################## Open PO Count ####################################################
 
@@ -721,23 +709,12 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_purchase_org_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
-
   measure: sum_spend_by_purchase_org_1 {
     type: sum
     sql: ${invoice_amount_in_source_currency} ;;
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_purchase_org_1_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-  }
 
   measure: sum_spend_by_purchase_grp_1 {
     type: sum
@@ -745,10 +722,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_purchase_grp_1_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-  }
 
   measure: sum_spend_by_vendor_1 {
     type: sum
@@ -756,17 +729,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  dimension: spend_by_vendor_globalcurr {
-    type: number
-    sql: ${invoice_amount_in_source_currency} * ${currency_conversion_new.ukurs};;
-  }
-
-  measure: sum_spend_by_vendor1_globalcurr {
-    type: sum
-    sql: ${spend_by_vendor_globalcurr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
 
   measure: sum_spend_by_country_1 {
     type: sum
@@ -774,10 +736,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_country_1_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-  }
 
   measure: sum_spend_by_purchase_grp {
     type: sum
@@ -785,12 +743,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_purchase_grp_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
 
   measure: sum_spend_by_country {
     type: sum
@@ -798,34 +750,18 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_country_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
 
   measure: sum_spend_by_material_type {
     type: sum
     sql: ${invoice_amount_in_source_currency} ;;
   }
 
-  measure: sum_spend_by_material_type_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
 
   measure: sum_spend_by_material_type_1 {
     type: sum
     sql: ${invoice_amount_in_source_currency} ;;
   }
 
-  measure: sum_spend_by_material_type1_global_curr {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-  }
 
   measure: sum_spend_by_material {
     type: sum
@@ -839,12 +775,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  measure: sum_spend_by_month_global_currency {
-    type: sum
-    sql: ${Spend_Global_Curr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-  }
 
   measure: sum_spend_by_month_1 {
     type: sum
@@ -857,16 +787,6 @@ view: vendor_performance {
     sql: ${invoice_amount_in_source_currency} ;;
   }
 
-  measure: sum_spend_by_vendor_globalcurr {
-    type: sum
-    sql: ${spend_by_vendor_globalcurr} ;;
-    value_format_name: Greek_Number_Format
-    hidden: no
-    link: {
-      label: "Spend by Top Vendors"
-      url: "/dashboards/cortex_sap_operational::spend_by_top_vendors?Company+Code={{ _filters['vendor_performance.company_text_butxt']| url_encode }}&Purchasing+Organization={{ _filters['vendor_performance.purchasing_organization_text_ekotx']| url_encode }}&Purchasing+Group={{ _filters['vendor_performance.purchasing_group_text_eknam']| url_encode }}&Vendor+Name={{ _filters['vendor_performance.name1']| url_encode }}&Vendor+Country={{ _filters['vendor_performance.country_key_land1']| url_encode }}&Target+Currency={{ _filters['currency_conversion_new.tcurr']| url_encode }}&Invoice+Date={{ _filters['vendor_performance.Invoice_date_date']| url_encode }}"
-    }
-  }
 
   measure: AccurateInvoice_Count {
     type: count
@@ -920,6 +840,7 @@ view: vendor_performance {
 
   dimension: plant {
     type: string
+    primary_key: yes
     sql: ${TABLE}.Plant_WERKS ;;
   }
 
@@ -930,16 +851,74 @@ view: vendor_performance {
     sql: ${TABLE}.NetPrice_NETPR ;;
   }
 
-  dimension: purchase_price_glob_curr {
+
+  dimension: standard_cost {
     type: number
-    sql: ${Purchase_Price1} * ${currency_conversion_new.ukurs} ;;
+    sql:
+    CASE
+      WHEN ${material_type} = 'FERT' OR ${material_type} = 'HALB'
+        THEN COALESCE(${materials_valuation_v2.standard_cost_stprs}, ${Purchase_Price1})
+      WHEN ${material_type} = 'ROH' OR ${material_type} = 'HIBE'
+        THEN COALESCE(${materials_valuation_v2.moving_average_price}, ${Purchase_Price1})
+    END ;;
+  }
+
+  dimension: standard_cost_tc {
+    type: number
+    label: "Standard Price in TC"
+    sql: ${standard_cost}*${exchange_rate_ukurs} ;;
+  }
+
+  measure: sum_standard_cost {
+    type: sum
+    value_format_name: Greek_Number_Format
+    label: "Sum Standard Price in TC"
+    sql: ${standard_cost_tc} ;;
+    hidden: no
+  }
+
+  dimension: net_price_in_target_currency_netpr {
+    type: number
+    value_format_name: Greek_Number_Format
+    label: "Purchase Price in TC"
+    sql: ${TABLE}.NetPriceInTargetCurrency_NETPR ;;
+  }
+
+  measure: sum_net_price_in_target_currency_netpr {
+    type: sum
+    value_format_name: Greek_Number_Format
+    label: "Sum Purchase Price in TC"
+    sql: ${net_price_in_target_currency_netpr} ;;
+    hidden: no
+  }
+
+  dimension: purchase_price_variance {
+    type: number
+    value_format_name: Greek_Number_Format
+    sql: abs((${net_price_in_target_currency_netpr} - ${standard_cost_tc}) * ${poquantity_menge}) ;;
+  }
+
+  measure: sum_purchase_price_variance {
+    type: sum
+    value_format_name: Greek_Number_Format
+    label: "Purchase Price Variance in TC"
+    sql: ${purchase_price_variance} ;;
+    hidden: no
   }
 
 
-  measure: sum_Purchase_price_global_currency {
-    type: sum
-    value_format_name: Greek_Number_Format
-    sql: ${purchase_price_glob_curr} ;;
+
+  ###############################Count Of Cleared Invoices##################################################################
+
+  dimension: vendor_invoice_accuracy {
+    type: string
+    sql: ${TABLE}.VendorInvoiceAccuracy ;;
+    hidden: no
+  }
+
+  measure: count_cleared_invoices {
+    type: count
+    filters: [vendor_invoice_accuracy: "AccurateInvoice, InaccurateInvoice"]
     hidden: no
   }
 
@@ -954,56 +933,6 @@ view: vendor_performance {
     value_format_name: Greek_Number_Format
   }
 
-  ##################  Standard Price Currency Conversion ##############
-
-  dimension: standard_price_glob_curr {
-    type: number
-    sql: (${Standard_Price} * ${currency_conversion_new.ukurs}) ;;
-  }
-
-  measure: sum_standard_price {
-    type: sum
-    sql: ${material_valuation.standard_price_stprs} ;;
-    value_format_name: Greek_Number_Format
-  }
-
-  measure: sum_Standard_Price_global_currency {
-    type: sum
-    value_format_name: Greek_Number_Format
-    sql: ${standard_price_glob_curr};;
-    hidden: no
-  }
-
-  dimension: Standard_Price {
-    type: number
-    sql: ${material_valuation.standard_price_stprs};;
-  }
-
-  ###################### Purchase variance currency conversion ###########
-
-  dimension:  Purchase_Variance_glob_curr{
-    type: number
-    sql:   ${Purchase_Variance} * ${currency_conversion_new.ukurs};;
-    hidden: no
-  }
-
-  measure:  sum_Purchase_Variance_global_currency{
-    type: sum
-    value_format_name: Greek_Number_Format
-    sql:    ${Purchase_Variance_glob_curr};;
-  }
-
-  dimension:  Purchase_Variance{
-    type: number
-    sql:    (( ${Purchase_price} - ${Standard_Price} ) * ${poquantity_menge}) ;;
-  }
-
-  measure: purchase_variance_local_curr {
-    type: sum
-    sql: ${Purchase_Variance} ;;
-    value_format_name: Greek_Number_Format
-  }
-
 
   dimension: Invoice_status {
     type: string
@@ -1013,6 +942,19 @@ view: vendor_performance {
   dimension: On_Time{
     type: yesno
     sql: ${vendor_on_time_delivery} = "NotDelayed";;
+    hidden: no
+  }
+#################################Spend by Top Vendors Detailed Report######################################
+
+  dimension: net_order_valuein_target_currency_netwr {
+    type: number
+    sql: ${TABLE}.NetOrderValueinTargetCurrency_NETWR ;;
+    hidden: no
+  }
+
+  dimension: exchange_rate_ukurs {
+    type: number
+    sql: ${TABLE}.ExchangeRate_UKURS ;;
     hidden: no
   }
 
@@ -1028,7 +970,7 @@ view: vendor_performance {
     value_format: "0.0%"
     link: {
       label: "Delivery Performance Trend"
-      url: "/dashboards/cortex_sap_operational::delivery_performance_trend?Target+Currency={{ _filters['currency_conversion_new.tcurr']| url_encode }}&Purchase+Order+Date={{ _filters['vendor_performance.purchasing_document_date_bedat_date']| url_encode }}&Vendor+Name={{ _filters['vendor_performance.name1']| url_encode }}&Company+Code={{ _filters['vendor_performance.company_text_butxt']| url_encode }}&Purchasing+Organization={{ _filters['vendor_performance.purchasing_organization_text_ekotx']| url_encode }}&Purchasing+Group={{ _filters['vendor_performance.purchasing_group_text_eknam']| url_encode }}&Vendor+Country={{ _filters['vendor_performance.country_key_land1']| url_encode }}"
+      url: "/dashboards/cortex_sap_operational::sap_finance_vp_09_a_delivery_performance_trend?Target+Currency={{ _filters['target_currency_tcurr']| url_encode }}&Purchase+Order+Date={{ _filters['vendor_performance.purchasing_document_date_bedat_date']| url_encode }}&Vendor+Name={{ _filters['vendor_performance.name1']| url_encode }}&Company+Code={{ _filters['vendor_performance.company_text_butxt']| url_encode }}&Purchasing+Organization={{ _filters['vendor_performance.purchasing_organization_text_ekotx']| url_encode }}&Purchasing+Group={{ _filters['vendor_performance.purchasing_group_text_eknam']| url_encode }}&Vendor+Country={{ _filters['vendor_performance.country_key_land1']| url_encode }}"
    }
   }
 
